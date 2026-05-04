@@ -128,6 +128,8 @@ interface Message {
   created_at: string
 }
 
+const recentlyShownIds = new Set<number>()
+
 interface DanmakuItem {
   id: number
   text: string
@@ -201,7 +203,13 @@ const startDanmaku = () => {
     if (messages.value.length === 0) return
     const message = messages.value[danmakuIndex % messages.value.length]
     danmakuIndex += 1
+    if (recentlyShownIds.has(message.id)) return
+    recentlyShownIds.add(message.id)
     addDanmakuItem(message)
+    if (recentlyShownIds.size > 50) {
+      const oldest = Array.from(recentlyShownIds)[0]
+      recentlyShownIds.delete(oldest)
+    }
   }, 1200)
 }
 
@@ -234,6 +242,7 @@ const submitMessage = async () => {
     const nickname = userStore.user?.nickname || userStore.user?.username || '游客'
     const res: any = await sendMessageBoard({ nickname, content, color: selectedColor.value || undefined })
     if (res.code === 200 && res.data) {
+      recentlyShownIds.add(res.data.id)
       messages.value = [res.data, ...messages.value]
       addDanmakuItem(res.data)
       showToast('留言已发送')
