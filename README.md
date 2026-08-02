@@ -218,7 +218,7 @@ A: 生产环境部署建议：
 
 ---
 
-**Justin的blog © 2024-2026 由 [Justin.Li](https://github.com/lijiajun20130726-ux) 构建**
+**Justin的blog © 2026 由 [Justin.Li](https://github.com/lijiajun20130726-ux) 构建**
 
 <!-- Badge Links -->
 [vue-badge]: https://img.shields.io/badge/Vue_3-4FC08D?style=flat-square&logo=vue.js&logoColor=white
