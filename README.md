@@ -1,7 +1,7 @@
 <br />
 <div align="center">
 
-  <img src="frontend/public/logo.png" alt="Justin的blog Logo" width="500" height="500">
+  <img src="frontend/public/logo.png" alt="Justin的blog Logo" width="218" height="218">
 
   <h1 align="center" style="margin-top: 0.2em;">Justin的blog 博客系统</h1>
 
