@@ -1,9 +1,9 @@
 <br />
 <div align="center">
 
-  <img src="houduan/database/e7492461651df697fb9ed118b7bf72c9.png" alt="Lboke Logo" width="128" height="128">
+  <img src="frontend/public/logo.png" alt="Justin的blog Logo" width="128" height="128">
 
-  <h1 align="center" style="margin-top: 0.2em;">Lboke</h1>
+  <h1 align="center" style="margin-top: 0.2em;">Justin的blog 博客系统</h1>
 
   [![Vue][vue-badge]][vue-url]
   [![TypeScript][typescript-badge]][typescript-url]
@@ -17,9 +17,9 @@
     <a href="https://github.com/lijiajun20130726-ux/Lboke"><strong>访问 GitHub &raquo;</strong></a>
     <br />
     <br />
-    <a href="https://github.com/lijiajun20130726-ux/Lboke/issues">报告 Bug</a>
+    <a href="https://github.com/lijiajun20130726-ux/Justin的blog/issues">报告 Bug</a>
     &middot;
-    <a href="https://github.com/lijiajun20130726-ux/Lboke/issues">功能建议</a>
+    <a href="https://github.com/lijiajun20130726-ux/Justin的blog/issues">功能建议</a>
   </p>
 </div>
 
@@ -53,7 +53,7 @@
 
 ## 为什么会有这个项目
 
-开发 Lboke 的初心很简单：做一个简洁优雅的个人博客系统，让每个人都能轻松拥有自己的博客。
+开发 Justin的blog 的初心很简单：做一个简洁优雅的个人博客系统，让每个人都能轻松拥有自己的博客。
 
 - **降低门槛** - 将复杂的配置转化为简单的桌面交互
 - **开箱即用** - 数据库、API、前端一站式部署
@@ -127,7 +127,7 @@ npm run dev
 ## 项目结构
 
 ```
-Lboke/
+Justin的blog/
 ├── frontend/                    # 前端项目 (Vue 3)
 │   ├── src/
 │   │   ├── api/               # API 接口
@@ -165,7 +165,7 @@ Lboke/
 
 ```
 +-------------------------------------------------------------+
-|                          Lboke                               |
+|                          Justin的blog 博客系统                         |
 |                                                              |
 |   +--------------------+         +----------------------+    |
 |   |   Browser          |         |   Server             |    |
@@ -218,7 +218,7 @@ A: 生产环境部署建议：
 
 ---
 
-**Lboke © 2024-2026 由 [Justin的科幻宇宙](https://github.com/lijiajun20130726-ux) 构建**
+**Justin的blog © 2024-2026 由 [Justin.Li](https://github.com/lijiajun20130726-ux) 构建**
 
 <!-- Badge Links -->
 [vue-badge]: https://img.shields.io/badge/Vue_3-4FC08D?style=flat-square&logo=vue.js&logoColor=white
