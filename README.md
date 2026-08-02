@@ -14,7 +14,7 @@
   <p align="center">
     <h3>简洁优雅的个人博客系统，让每个人都能轻松拥有自己的博客</h3>
     <br />
-    <a href="https://github.com/lijiajun20130726-ux/Lboke"><strong>访问 GitHub &raquo;</strong></a>
+    <a href="https://github.com/lijiajun20130726-ux/Justin-blog"><strong>访问 GitHub &raquo;</strong></a>
     <br />
     <br />
     <a href="https://github.com/lijiajun20130726-ux/Justin的blog/issues">报告 Bug</a>
@@ -70,7 +70,7 @@
 ### Step 1：克隆项目
 
 ```bash
-git clone https://github.com/lijiajun20130726-ux/Lboke.git
+git clone https://github.com/lijiajun20130726-ux/Justin-blog.git
 cd Lboke
 ```
 
