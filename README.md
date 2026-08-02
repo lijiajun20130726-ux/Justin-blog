@@ -17,9 +17,9 @@
     <a href="https://github.com/lijiajun20130726-ux/Justin-blog"><strong>访问 GitHub &raquo;</strong></a>
     <br />
     <br />
-    <a href="https://github.com/lijiajun20130726-ux/Justin的blog/issues">报告 Bug</a>
+    <a href="https://github.com/lijiajun20130726-ux/Justin-blog/issues">报告 Bug</a>
     &middot;
-    <a href="https://github.com/lijiajun20130726-ux/Justin的blog/issues">功能建议</a>
+    <a href="https://github.com/lijiajun20130726-ux/Justin-blog/issues">功能建议</a>
   </p>
 </div>
 
