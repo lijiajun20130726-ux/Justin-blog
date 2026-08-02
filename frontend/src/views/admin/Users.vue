@@ -25,7 +25,7 @@
           <tr v-for="user in users" :key="user.id">
             <td>{{ user.id }}</td>
             <td>
-              <img :src="user.avatar || '/uploads/default-avatar.jpg'" class="table-avatar" />
+              <img :src="user.avatar || `${uploadsUrl}/uploads/default-avatar.jpg`" class="table-avatar" />
               {{ user.username }}
             </td>
             <td>{{ user.nickname }}</td>

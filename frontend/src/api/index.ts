@@ -36,7 +36,13 @@ api.interceptors.response.use(
       const isAdminPath = window.location.pathname.startsWith('/admin')
       window.location.href = isAdminPath ? '/admin/login' : '/login'
     }
-    return Promise.reject(error.response?.data || error)
+    // 始终把后端返回的 data（带 code/message）包成标准 Error
+    const data = error.response?.data
+    const err = new Error(data?.message || error.message || '请求失败')
+    ;(err as any).code = data?.code
+    ;(err as any).data = data
+    ;(err as any).response = error.response
+    return Promise.reject(err)
   }
 )
 

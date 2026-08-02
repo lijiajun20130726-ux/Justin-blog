@@ -53,7 +53,7 @@
         <div class="card-body">
           <div class="avatar-upload">
             <div class="avatar-preview">
-              <img :src="form.author_avatar || '/uploads/default-avatar.jpg'" alt="头像预览" />
+              <img :src="form.author_avatar || `${uploadsUrl}/uploads/default-avatar.jpg`" alt="头像预览" />
             </div>
             <div class="avatar-input">
               <label>头像链接</label>
@@ -165,6 +165,7 @@
 import { ref, onMounted } from 'vue'
 import { getSiteInfo, updateSiteInfo } from '@/api/front'
 import { uploadImage } from '@/api/upload'
+import { uploadsUrl } from '@/utils/url'
 
 const form = ref<any>({})
 const saving = ref(false)
@@ -188,7 +189,7 @@ const handleQrUpload = async (event: Event) => {
     try {
       const res: any = await uploadImage(file)
       if (res.code === 200) {
-        form.value.wechat_qrcode = res.data.url
+        form.value.wechat_qrcode = uploadsUrl + res.data.url
         showToast('二维码上传成功')
       } else {
         showToast(res.message || '上传失败', 'error')
@@ -212,7 +213,7 @@ const handleOfficialQrUpload = async (event: Event) => {
     try {
       const res: any = await uploadImage(file)
       if (res.code === 200) {
-        form.value.wechat_official_qrcode = res.data.url
+        form.value.wechat_official_qrcode = uploadsUrl + res.data.url
         showToast('公众号二维码上传成功')
       } else {
         showToast(res.message || '上传失败', 'error')

@@ -52,7 +52,7 @@
               </div>
               <div class="field">
                 <label>头像地址</label>
-                <input v-model="profileForm.avatar" placeholder="/uploads/xxx.png" />
+                <input v-model="profileForm.avatar" :placeholder="`${uploadsUrl}/uploads/xxx.png`" />
               </div>
             </div>
           </div>
@@ -146,6 +146,7 @@ import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { updateProfile, changePassword, getUserLikedArticles } from '@/api/user'
 import { uploadImage } from '@/api/upload'
+import { uploadsUrl } from '@/utils/url'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -183,7 +184,7 @@ const createdAtLabel = computed(() => {
   return d.toLocaleString('zh-CN')
 })
 
-const avatarPreview = computed(() => profileForm.value.avatar || userStore.user?.avatar || '/uploads/default-avatar.jpg')
+const avatarPreview = computed(() => profileForm.value.avatar || userStore.user?.avatar || `${uploadsUrl}/uploads/default-avatar.jpg`)
 
 const syncFormFromStore = () => {
   profileForm.value.nickname = userStore.user?.nickname || ''
@@ -213,7 +214,7 @@ const handleAvatarFileChange = async (e: Event) => {
   try {
     const res: any = await uploadImage(file)
     if (res.code === 200) {
-      profileForm.value.avatar = res.data.url
+      profileForm.value.avatar = uploadsUrl + res.data.url
     } else {
       alert(res.message || '上传失败')
     }

@@ -1,5 +1,8 @@
 <template>
   <div class="article-page" v-if="article">
+    <!-- Reading Progress Bar -->
+    <ProgressBar :content="article.content" />
+    
     <div class="article-container">
       <!-- Article Header -->
       <header class="article-hero">
@@ -12,7 +15,7 @@
           <h1 class="article-title">{{ article.title }}</h1>
           <div class="article-meta">
             <div class="meta-item">
-              <img :src="siteInfo.author_avatar || '/uploads/default-avatar.jpg'" class="meta-avatar" />
+              <img :src="siteInfo.author_avatar || `${uploadsUrl}/uploads/default-avatar.jpg`" class="meta-avatar" />
               <span>{{ siteInfo.author_name || '作者' }}</span>
             </div>
             <span class="meta-dot"></span>
@@ -65,11 +68,12 @@
             </button>
             <div class="share-box">
               <span class="share-label">分享文章:</span>
-              <div class="share-icons">
-                <button class="share-btn">WeChat</button>
-                <button class="share-btn">Weibo</button>
-                <button class="share-btn" @click="copyLink">Link</button>
-              </div>
+              <ShareButtons 
+                :title="article.title" 
+                :description="article.summary"
+                :image="article.cover_image"
+                :stats="{ views: article.view_count, shares: article.share_count || 0 }"
+              />
             </div>
           </div>
 
@@ -119,7 +123,7 @@
 
             <div class="comment-list">
               <div v-for="item in comments" :key="item.id" class="comment-item">
-                <img :src="item.avatar || '/uploads/default-avatar.jpg'" class="comment-avatar" />
+                <img :src="item.avatar || `${uploadsUrl}/uploads/default-avatar.jpg`" class="comment-avatar" />
                 <div class="comment-content-box">
                   <div class="comment-header">
                     <span class="comment-user">{{ item.nickname }}</span>
@@ -197,6 +201,9 @@ import { getArticleComments, postComment } from '@/api/comment'
 import { subscribe } from '@/api/subscription'
 import { useUserStore } from '@/stores/user'
 import { MdPreview } from 'md-editor-v3'
+import ProgressBar from '@/components/ProgressBar.vue'
+import ShareButtons from '@/components/ShareButtons.vue'
+import { uploadsUrl } from '@/utils/url'
 import 'md-editor-v3/lib/style.css'
 
 const route = useRoute()
@@ -241,10 +248,58 @@ const loadArticle = async () => {
   if (artRes.code === 200) {
     article.value = artRes.data
     isLiked.value = Boolean(artRes.data?.is_liked)
+    updateMetaTags(artRes.data)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
   if (siteRes.code === 200) siteInfo.value = siteRes.data
   loadComments()
+}
+
+const updateMetaTags = (articleData: any) => {
+  if (!articleData) return
+  
+  const title = articleData.title || ''
+  const description = articleData.summary || articleData.content?.replace(/<[^>]+>/g, '').substring(0, 150) || ''
+  const image = articleData.cover_image || ''
+  const url = window.location.href
+  
+  const setTitle = (t: string) => {
+    document.title = `${t} - 李嘉骏博客`
+  }
+  
+  const setMetaTag = (property: string, content: string) => {
+    let element = document.querySelector(`meta[property="${property}"]`) as HTMLMetaElement | null
+    if (!element) {
+      element = document.createElement('meta')
+      element.setAttribute('property', property)
+      document.head.appendChild(element)
+    }
+    element.setAttribute('content', content)
+  }
+  
+  const setNameTag = (name: string, content: string) => {
+    let element = document.querySelector(`meta[name="${name}"]`) as HTMLMetaElement | null
+    if (!element) {
+      element = document.createElement('meta')
+      element.setAttribute('name', name)
+      document.head.appendChild(element)
+    }
+    element.setAttribute('content', content)
+  }
+  
+  setTitle(title)
+  
+  setMetaTag('og:title', title)
+  setMetaTag('og:description', description)
+  setMetaTag('og:image', image)
+  setMetaTag('og:url', url)
+  setMetaTag('og:type', 'article')
+  setMetaTag('og:site_name', '李嘉骏博客')
+  
+  setNameTag('twitter:card', 'summary_large_image')
+  setNameTag('twitter:title', title)
+  setNameTag('twitter:description', description)
+  setNameTag('twitter:image', image)
 }
 
 const loadComments = async () => {

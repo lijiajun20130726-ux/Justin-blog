@@ -46,7 +46,7 @@
             <input type="checkbox" />
             <span>记住我</span>
           </label>
-          <a href="#" class="forgot-password">忘记密码？</a>
+          <router-link to="/forgot-password" class="forgot-password">忘记密码？</router-link>
         </div>
 
         <button type="submit" class="submit-btn" :disabled="loading">
@@ -134,9 +134,16 @@ const handleWeChatLogin = () => {
 onMounted(async () => {
   const tokenParam = route.query.token
   const errorParam = route.query.wechat_error
+  const resetSuccess = route.query.resetSuccess
+  
   if (errorParam) {
     showToast(String(errorParam))
   }
+  
+  if (resetSuccess === 'true') {
+    showToast('✓ 密码重置成功，请使用新密码登录')
+  }
+  
   if (tokenParam) {
     const token = Array.isArray(tokenParam) ? tokenParam[0] : String(tokenParam)
     userStore.setToken(token)

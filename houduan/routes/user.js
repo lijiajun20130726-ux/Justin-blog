@@ -7,7 +7,7 @@ const jwt = require('jsonwebtoken');
 const { body, validationResult } = require('express-validator');
 const { pool } = require('../config/database');
 const { generateToken, authMiddleware, adminMiddleware } = require('../middleware/auth');
-const { sendVerifyCode, sendRegisterVerifyCode } = require('../config/email');
+const { sendVerifyCode, sendRegisterVerifyCode, sendResetPasswordCode } = require('../config/email');
 const ResponseHelper = require('../utils/response');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_key';
@@ -486,6 +486,240 @@ router.get('/likes', authMiddleware, async (req, res) => {
 
         ResponseHelper.paginate(res, articles, countResult[0].total, page, pageSize);
     } catch (error) {
+        ResponseHelper.serverError(res, error);
+    }
+});
+
+// ==================== 忘记密码接口 ====================
+
+const forgotPasswordValidation = [
+    body('email').trim().isEmail().withMessage('请输入有效的邮箱地址')
+];
+
+const resetPasswordValidation = [
+    body('email').trim().isEmail().withMessage('请输入有效的邮箱地址'),
+    body('code').trim().isLength({ min: 6, max: 6 }).withMessage('验证码为6位数字'),
+    body('password').isLength({ min: 6 }).withMessage('新密码长度至少6个字符')
+];
+
+// 检查邮箱是否已注册
+router.post('/check-email-exists', [
+    body('email').trim().isEmail().withMessage('请输入有效的邮箱地址')
+], async (req, res) => {
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return ResponseHelper.error(res, errors.array()[0].msg);
+        }
+
+        const { email } = req.body;
+
+        // 查询邮箱是否已注册
+        const [users] = await pool.query(
+            'SELECT id FROM users WHERE email = ? AND status = 1',
+            [email.toLowerCase()]
+        );
+
+        if (users.length > 0) {
+            return ResponseHelper.success(res, { exists: true }, '邮箱已注册');
+        } else {
+            return ResponseHelper.error(res, '该邮箱未注册', 404);
+        }
+    } catch (error) {
+        console.error('检查邮箱失败:', error);
+        ResponseHelper.serverError(res, error);
+    }
+});
+
+// 检查新密码是否与原密码相同
+router.post('/check-password-same', [
+    body('email').trim().isEmail().withMessage('请输入有效的邮箱地址'),
+    body('code').trim().isLength({ min: 6, max: 6 }).withMessage('验证码为6位数字'),
+    body('newPassword').isLength({ min: 6 }).withMessage('新密码长度至少6个字符')
+], async (req, res) => {
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return ResponseHelper.error(res, errors.array()[0].msg);
+        }
+
+        const { email, code, newPassword } = req.body;
+
+        // 查找用户
+        const [users] = await pool.query(
+            'SELECT id, password FROM users WHERE email = ? AND status = 1',
+            [email.toLowerCase()]
+        );
+
+        if (users.length === 0) {
+            return ResponseHelper.error(res, '用户不存在', 404);
+        }
+
+        // 验证验证码
+        const [verifyCodes] = await pool.query(
+            'SELECT id, code, expires_at FROM email_verify_codes WHERE email = ? ORDER BY created_at DESC LIMIT 1',
+            [email.toLowerCase()]
+        );
+
+        if (verifyCodes.length === 0) {
+            return ResponseHelper.error(res, '请先获取验证码');
+        }
+
+        const verifyCode = verifyCodes[0];
+
+        // 检查是否过期
+        if (new Date() > new Date(verifyCode.expires_at)) {
+            return ResponseHelper.error(res, '验证码已过期，请重新获取');
+        }
+
+        // 验证码比对
+        if (code !== verifyCode.code) {
+            return ResponseHelper.error(res, '验证码错误');
+        }
+
+        // 比较新密码与原密码
+        const isSame = await bcrypt.compare(newPassword, users[0].password);
+
+        console.log(`[密码对比检查] 邮箱: ${email}, 是否相同: ${isSame}`);
+
+        return ResponseHelper.success(res, { isSame }, isSame ? '新密码不能与原密码相同' : '可以使用此密码');
+
+    } catch (error) {
+        console.error('密码对比检查失败:', error);
+        ResponseHelper.serverError(res, error);
+    }
+});
+
+// 发送重置密码验证码
+router.post('/forgot-password', forgotPasswordValidation, async (req, res) => {
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return ResponseHelper.error(res, errors.array()[0].msg);
+        }
+
+        const { email } = req.body;
+
+        // 检查邮箱是否已注册
+        const [users] = await pool.query(
+            'SELECT id, username, email FROM users WHERE email = ? AND status = 1',
+            [email]
+        );
+
+        if (users.length === 0) {
+            return ResponseHelper.error(res, '该邮箱未注册', 404);
+        }
+
+        // 检查是否频繁发送（60秒内只能发送一次）
+        const [recentCodes] = await pool.query(
+            'SELECT id FROM email_verify_codes WHERE email = ? AND created_at > DATE_SUB(NOW(), INTERVAL 60 SECOND) ORDER BY created_at DESC LIMIT 1',
+            [email]
+        );
+
+        if (recentCodes.length > 0) {
+            return ResponseHelper.error(res, '发送过于频繁，请60秒后再试');
+        }
+
+        // 生成6位随机验证码
+        const code = Math.floor(100000 + Math.random() * 900000).toString();
+        
+        // 清除该邮箱的旧验证码
+        await pool.query('DELETE FROM email_verify_codes WHERE email = ?', [email]);
+
+        // 保存新验证码（5分钟有效）
+        await pool.query(
+            'INSERT INTO email_verify_codes (email, code, expires_at) VALUES (?, ?, DATE_ADD(NOW(), INTERVAL 5 MINUTE))',
+            [email, code]
+        );
+
+        // 发送邮件
+        try {
+            await sendResetPasswordCode(email, code);
+            
+            console.log(`[密码重置] 验证码已发送至: ${email}, 验证码: ${code}`);
+            
+            ResponseHelper.success(res, { 
+                message: '验证码已发送到您的邮箱，请查收',
+                expiresIn: 300 
+            }, '验证码发送成功');
+        } catch (emailError) {
+            console.error('邮件发送失败:', emailError);
+            ResponseHelper.error(res, '验证码发送失败，请稍后重试');
+        }
+
+    } catch (error) {
+        console.error('忘记密码接口错误:', error);
+        ResponseHelper.serverError(res, error);
+    }
+});
+
+// 验证码验证并重置密码
+router.post('/reset-password', resetPasswordValidation, async (req, res) => {
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return ResponseHelper.error(res, errors.array()[0].msg);
+        }
+
+        const { email, code, password } = req.body;
+
+        // 查找用户（包含密码字段用于对比）
+        const [users] = await pool.query(
+            'SELECT id, password FROM users WHERE email = ? AND status = 1',
+            [email]
+        );
+
+        if (users.length === 0) {
+            return ResponseHelper.error(res, '该邮箱未注册', 404);
+        }
+
+        // 检查新密码是否与原密码相同（安全防线）
+        const isSameAsOldPassword = await bcrypt.compare(password, users[0].password);
+        if (isSameAsOldPassword) {
+            console.log(`[密码重置失败] 邮箱: ${email}, 原因: 新密码与原密码相同`);
+            return ResponseHelper.error(res, '新密码不能与原密码相同，请重新设置');
+        }
+
+        // 验证验证码
+        const [verifyCodes] = await pool.query(
+            'SELECT id, code, expires_at FROM email_verify_codes WHERE email = ? ORDER BY created_at DESC LIMIT 1',
+            [email]
+        );
+
+        if (verifyCodes.length === 0) {
+            return ResponseHelper.error(res, '验证码不存在或已过期，请重新获取');
+        }
+
+        const verifyCode = verifyCodes[0];
+
+        // 检查是否过期
+        if (new Date() > new Date(verifyCode.expires_at)) {
+            // 删除过期验证码
+            await pool.query('DELETE FROM email_verify_codes WHERE id = ?', [verifyCode.id]);
+            return ResponseHelper.error(res, '验证码已过期，请重新获取');
+        }
+
+        // 验证码比对（防止时序攻击）
+        if (code !== verifyCode.code) {
+            return ResponseHelper.error(res, '验证码错误');
+        }
+
+        // 更新密码
+        const hashedPassword = await bcrypt.hash(password, 10);
+        await pool.query(
+            'UPDATE users SET password = ?, updated_at = NOW() WHERE email = ?',
+            [hashedPassword, email]
+        );
+
+        // 删除已使用的验证码
+        await pool.query('DELETE FROM email_verify_codes WHERE id = ?', [verifyCode.id]);
+
+        console.log(`[密码重置成功] 邮箱: ${email}, 用户ID: ${users[0].id}`);
+
+        ResponseHelper.success(res, null, '密码重置成功，请使用新密码登录');
+
+    } catch (error) {
+        console.error('重置密码接口错误:', error);
         ResponseHelper.serverError(res, error);
     }
 });

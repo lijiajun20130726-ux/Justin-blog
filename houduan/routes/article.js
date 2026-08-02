@@ -4,6 +4,48 @@ const { body, validationResult } = require('express-validator');
 const { pool } = require('../config/database');
 const { authMiddleware, adminMiddleware } = require('../middleware/auth');
 const ResponseHelper = require('../utils/response');
+const { sendNewArticleNotificationBatch } = require('../config/email');
+
+// 通知订阅者（异步，不阻塞响应）
+async function notifySubscribers(article) {
+    try {
+        const [subs] = await pool.query(
+            'SELECT email FROM subscriptions WHERE status = 1'
+        );
+        if (subs.length === 0) return;
+
+        const [authors] = await pool.query(
+            'SELECT username, nickname FROM users WHERE id = ?',
+            [article.author_id]
+        );
+        const author = authors[0] || {};
+        const authorName = author.nickname || author.username || '站长';
+
+        const [cats] = await pool.query(
+            'SELECT name FROM categories WHERE id = ?',
+            [article.category_id]
+        );
+        const categoryName = cats.length > 0 ? cats[0].name : '';
+
+        const articleData = {
+            id: article.id,
+            title: article.title,
+            summary: article.summary,
+            cover_image: article.cover_image,
+            published_at: article.published_at,
+            author_name: authorName,
+            category_name: categoryName,
+            blog_url: process.env.FRONTEND_URL || 'http://localhost:5173'
+        };
+
+        const emails = subs.map(s => s.email);
+        console.log(`[订阅推送] 准备发送给 ${emails.length} 位订阅者: ${article.title}`);
+        const result = await sendNewArticleNotificationBatch(emails, articleData);
+        console.log(`[订阅推送] 完成: 成功 ${result.success}, 失败 ${result.failed}`);
+    } catch (err) {
+        console.error('[订阅推送] 失败:', err.message);
+    }
+}
 
 // 参数验证规则
 const articleValidation = [
@@ -72,6 +114,17 @@ router.post('/', authMiddleware, articleValidation, async (req, res) => {
 
             await connection.commit();
             ResponseHelper.created(res, { articleId }, '文章创建成功');
+
+            // 如果是直接发布，通知订阅者
+            if (status === 'published') {
+                const [newArticle] = await pool.query(
+                    'SELECT id, title, summary, cover_image, author_id, category_id, published_at FROM articles WHERE id = ?',
+                    [articleId]
+                );
+                if (newArticle.length > 0) {
+                    notifySubscribers(newArticle[0]);
+                }
+            }
         } catch (error) {
             await connection.rollback();
             throw error;

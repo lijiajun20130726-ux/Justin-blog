@@ -149,6 +149,52 @@ const handleSubscribe = async () => {
   overflow: hidden;
   border: 1px solid var(--border-color);
   transition: all 0.3s;
+  min-width: 0;
+  position: relative;
+}
+
+.input-wrapper input {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  padding: 14px 16px;
+  color: var(--text-primary);
+  font-size: 14px;
+  outline: none;
+}
+
+.input-wrapper input::placeholder {
+  color: var(--text-secondary);
+}
+
+.input-wrapper input:disabled {
+  color: var(--text-secondary);
+  -webkit-text-fill-color: var(--text-secondary);
+  opacity: 1;
+}
+
+.input-wrapper input:disabled::placeholder {
+  color: var(--text-secondary);
+}
+
+.input-wrapper button {
+  background: transparent;
+  border: none;
+  padding: 0 20px;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-left: 1px solid var(--border-color);
+  flex-shrink: 0;
+  min-width: 56px;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  border-top-right-radius: 11px;
+  border-bottom-right-radius: 11px;
 }
 
 .input-wrapper.focused {
@@ -199,6 +245,8 @@ const handleSubscribe = async () => {
   align-items: center;
   justify-content: center;
   border-left: 1px solid var(--border-color);
+  flex-shrink: 0;
+  min-width: 56px;
 }
 
 .input-wrapper button:hover:not(:disabled) {

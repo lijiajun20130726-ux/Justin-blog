@@ -7,5 +7,5 @@ import api from './index'
 export const uploadImage = (file: File) => {
   const formData = new FormData()
   formData.append('image', file)
-  return api.post('/upload/image', formData)
+  return api.post('/upload/image', formData, { timeout: 120000 })
 }

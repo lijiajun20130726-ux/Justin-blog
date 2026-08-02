@@ -76,14 +76,39 @@ const routes: Array<RouteRecordRaw> = [
         component: () => import('../views/front/Login.vue')
       },
       {
+        path: '/forgot-password',
+        name: 'ForgotPassword',
+        component: () => import('../views/front/ForgotPassword.vue')
+      },
+      {
         path: '/register',
         name: 'Register',
         component: () => import('../views/front/Register.vue')
       },
       {
+        path: '/oauth/authorize',
+        name: 'OAuthAuthorize',
+        component: () => import('../views/front/OAuthAuthorize.vue')
+      },
+      {
         path: '/search',
         name: 'Search',
         component: () => import('../views/front/Search.vue')
+      },
+      {
+        path: '/music',
+        name: 'Music',
+        component: () => import('../views/front/Music.vue')
+      },
+      {
+        path: '/unsubscribe',
+        name: 'Unsubscribe',
+        component: () => import('../views/front/Unsubscribe.vue')
+      },
+      {
+        path: '/404-gate',
+        name: 'FakeNotFound',
+        component: () => import('../views/front/FakeNotFound.vue')
       },
       {
         path: '/user/profile',
@@ -164,6 +189,11 @@ const routes: Array<RouteRecordRaw> = [
         path: 'settings',
         name: 'AdminSettings',
         component: () => import('../views/admin/Settings.vue')
+      },
+      {
+        path: 'music',
+        name: 'AdminMusic',
+        component: () => import('../views/admin/MusicManager.vue')
       }
     ]
   }

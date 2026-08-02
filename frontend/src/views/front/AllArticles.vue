@@ -49,7 +49,7 @@
               <h2 class="title">{{ article.title }}</h2>
               <p class="summary">{{ article.summary || '暂无摘要' }}</p>
               <div class="author">
-                <img class="author-avatar" :src="article.author_avatar || '/uploads/default-avatar.jpg'" alt="author" />
+                <img class="author-avatar" :src="article.author_avatar || `${uploadsUrl}/uploads/default-avatar.jpg`" alt="author" />
                 <span class="author-name">{{ article.author_name || '作者' }}</span>
               </div>
             </div>
@@ -75,6 +75,7 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getArticles, getCategories } from '@/api/front'
+import { uploadsUrl } from '@/utils/url'
 
 const route = useRoute()
 const router = useRouter()

@@ -53,6 +53,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { getArticle, createArticle, updateArticle } from '@/api/article'
 import { getCategories } from '@/api/front'
 import { uploadImage } from '@/api/upload'
+import { uploadsUrl } from '@/utils/url'
 import { MdEditor } from 'md-editor-v3'
 import 'md-editor-v3/lib/style.css'
 
@@ -74,7 +75,7 @@ const handleCoverUpload = async (event: Event) => {
     try {
       const res: any = await uploadImage(input.files[0])
       if (res.code === 200) {
-        form.value.cover_image = res.data.url
+        form.value.cover_image = uploadsUrl + res.data.url
       }
     } catch (err) {
       console.error('封面上传失败:', err)
@@ -90,7 +91,7 @@ const onUploadImg = async (files: File[], callback: (urls: string[]) => void) =>
     })
   )
 
-  callback(res.map((item: any) => item.data.url))
+  callback(res.map((item: any) => uploadsUrl + item.data.url))
 }
 
 const handleSubmit = async (status = 'published') => {

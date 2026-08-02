@@ -3,10 +3,7 @@
     <div class="container navbar-inner">
       <!-- Logo & Site Name -->
       <router-link to="/" class="brand" @click="trackEvent('click_logo', 'navbar')">
-        <img class="brand-icon" src="/favicon.jpg" alt="logo" />
-        <div class="brand-text">
-          <div class="brand-title">{{ siteInfo.blog_title || '李嘉骏的火车站' }}</div>
-        </div>
+        <img class="brand-icon" src="/logo.png" alt="logo" />
       </router-link>
 
       <!-- Navigation Menu (Desktop) -->
@@ -39,7 +36,7 @@
         <router-link to="/friendlinks" class="menu-item" active-class="active" @click="trackEvent('click_menu', 'friendlinks')">友链</router-link>
         <router-link to="/message-board" class="menu-item" active-class="active" @click="trackEvent('click_menu', 'message_board')">留言</router-link>
         <router-link to="/about" class="menu-item" active-class="active" @click="trackEvent('click_menu', 'about')">关于</router-link>
-        <a v-if="youtubeLink" :href="youtubeLink" class="menu-item" target="_blank" rel="noopener" @click="trackEvent('click_menu', 'youtube')">YouTube</a>
+        <a v-if="youtubeLink" :href="youtubeLink" class="menu-item" target="_blank" rel="noopener" @click="trackEvent('click_menu', 'youtube')" style="display: none;">YouTube</a>
       </nav>
 
       <!-- Right Actions -->
@@ -108,7 +105,7 @@
           <router-link to="/friendlinks" class="mobile-item" @click="mobileMenuOpen = false">友链</router-link>
           <router-link to="/message-board" class="mobile-item" @click="mobileMenuOpen = false">留言</router-link>
           <router-link to="/about" class="mobile-item" @click="mobileMenuOpen = false">关于</router-link>
-          <a v-if="youtubeLink" :href="youtubeLink" class="mobile-item" target="_blank" rel="noopener" @click="mobileMenuOpen = false; trackEvent('click_menu', 'youtube')">YouTube</a>
+          <a v-if="youtubeLink" :href="youtubeLink" class="mobile-item" target="_blank" rel="noopener" @click="mobileMenuOpen = false; trackEvent('click_menu', 'youtube')" style="display: none;">YouTube</a>
           <div class="mobile-divider"></div>
           <template v-if="!userStore.token">
             <router-link to="/login" class="mobile-item login" @click="mobileMenuOpen = false">登录</router-link>
@@ -147,6 +144,8 @@ const theme = ref('light')
 const startTime = ref(Date.now())
 const lastPageTime = ref(Date.now())
 const youtubeFallback = 'https://www.youtube.com/@lijiajun-xtjj/'
+
+// 管理员 Logo 调节工具（已删除 UI）
 
 // Computed
 const isDiscoverActive = computed(() => {
@@ -359,9 +358,12 @@ onUnmounted(() => {
 }
 
 .brand-icon {
-  width: 56px;
-  height: 56px;
+  width: 168px;
+  height: 168px;
+  margin-left: 0px;
+  margin-top: 5px;
   object-fit: contain;
+  transition: all 0.25s ease;
 }
 
 .brand-title {
